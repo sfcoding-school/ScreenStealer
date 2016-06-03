@@ -1,2 +1,11 @@
-# ScreenStealer
-[Mobile Programming] A little backdoor to take screenshots from (rooted) Android devices
+#ScreenStealer
+##A little backdoor to take screenshots from (rooted) Android devices
+
+###Overview
+This little "backdoor" is made for a university project. The client that had to be installed on the victim phone (directory **ScreenStealer**) is made in Java for Android devices, while the server (directory **ScreenStealerServer**) is written in pure Java. Directly from your PC, you will be able to take a screenshot of the victim phone and easily retrieve it whenever you wish (if the phone is connected to the Internet). The server is suited to interact with multiple phones, so you can monitor more than one device at a time.
+
+###How it works
+The server is composed of a single class, **ScreenStealerService.java**, which permanently run a ServerSocket that listen to the port 7654. When a connection comes in, the server launch a new Thread to communicate with the victim phone. This Thread wait for the user input to request a screenshot, that will be saved on a new PNG image. The client is composed of various classes: the **MainActivity.java** class is used to start the other components of the app and, when done, it hide itself from the launcher and terminate. It also ask for root privileges (necessary to take a screenshot), so the user should have the victim phone in his/her hands in order to accept this request and not show the installation to the victim. After this step the program is completely silent. The **ConnectionStatusBR.java** class is a BroadcastReceiver listening for changes in network availability in order to start/stop communications with the server. The **ScreenStealerService.java** class implement a Service that only start/stop the communications with the server and is controlled by the BroadcastReceiver. **ClientThread.java** is the core of the backdoor: it creates the Socket with the server and then, after sending the phone serial number to identify, it waits for its request through it: when one comes, it takes a screenshot using the system program **system/bin/screencap** and saves it in a PNG image, then loads it in a Bitmap object, convert it into a byte array and send it to the server, that will recontruct it. When done, original PNG image is deleted in order not to leave as sign of usage.
+
+###Author
+*Castellini Jacopo*
