@@ -13,6 +13,10 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.Socket;
+import java.security.MessageDigest;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 public class ClientThread extends Thread {
 
@@ -23,29 +27,53 @@ public class ClientThread extends Thread {
     public void run() {
         final String HOST = "192.168.0.6";
         final int PORT = 7654;
+        boolean res = false;
+        while (!res) {
+            try {
+                sock = new Socket(HOST, PORT);
+                res = true;
+            } catch (IOException e) {
+                try {
+                    Thread.sleep(5000);
+                } catch (InterruptedException i) {
+                    i.printStackTrace();
+                }
+            }
+        }
         try {
-            sock = new Socket(HOST, PORT);
             Log.i("Client", "Connection established!");
             dos = new DataOutputStream(sock.getOutputStream());
             br = new BufferedReader(new InputStreamReader(sock.getInputStream()));
             dos.writeUTF(android.os.Build.SERIAL);
             Log.i("Client", "Serial number sended");
             String fromServer;
-            byte[] screen;
+            Date date;
+            DateFormat df = new SimpleDateFormat("yyyy-MM-dd HH-mm-ss");
+            byte[] screen, digest;
+            MessageDigest sha1;
             while (true) {
                 fromServer = br.readLine();
                 Log.i("Client", "Request received");
                 if (fromServer.equals("STOP"))
                     break;
                 else if (fromServer.equals("GO")) {
+                    date = new Date();
+                    dos.writeUTF(df.format(date));
                     screen = takeScreenshot();
                     dos.writeInt(screen.length);
                     dos.write(screen);
                     File file = new File(Environment.getExternalStorageDirectory().toString() + "/screenshot.png");
-                    boolean res = false;
+                    res = false;
                     while (!res)
                         res = file.delete();
                     Log.i("Client", "Screenshot sended");
+                    sha1 = MessageDigest.getInstance("SHA-1");
+                    sha1.update(screen, 0, screen.length);
+                    digest = sha1.digest();
+                    StringBuilder sb = new StringBuilder();
+                    for (int seq : digest)
+                        sb.append(Integer.toString((seq & 0xff) + 0x100, 16).substring(1));
+                    dos.writeUTF(sb.toString());
                 }
             }
         } catch (Exception e) {
