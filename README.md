@@ -9,3 +9,4 @@ The server is composed of two classes: the **ScreenStealerService.java** class, 
 
 ###Author
 *Castellini Jacopo*
+Released under the GNU General Public License, Version 3 (29/06/2007)
