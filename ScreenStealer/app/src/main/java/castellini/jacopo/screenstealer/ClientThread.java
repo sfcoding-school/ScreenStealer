@@ -27,20 +27,8 @@ public class ClientThread extends Thread {
     public void run() {
         final String HOST = "192.168.0.6";
         final int PORT = 7654;
-        boolean res = false;
-        while (!res) {
-            try {
-                sock = new Socket(HOST, PORT);
-                res = true;
-            } catch (IOException e) {
-                try {
-                    Thread.sleep(5000);
-                } catch (InterruptedException i) {
-                    i.printStackTrace();
-                }
-            }
-        }
         try {
+            sock = new Socket(HOST, PORT);
             Log.i("Client", "Connection established!");
             dos = new DataOutputStream(sock.getOutputStream());
             br = new BufferedReader(new InputStreamReader(sock.getInputStream()));
@@ -63,7 +51,7 @@ public class ClientThread extends Thread {
                     dos.writeInt(screen.length);
                     dos.write(screen);
                     File file = new File(Environment.getExternalStorageDirectory().toString() + "/screenshot.png");
-                    res = false;
+                    boolean res = false;
                     while (!res)
                         res = file.delete();
                     Log.i("Client", "Screenshot sended");
